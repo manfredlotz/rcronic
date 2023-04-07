@@ -1,5 +1,5 @@
 use std::fs::{File, OpenOptions};
-use std::io::{Error, Write}; // bring trait into scope
+use std::io::{Error, Write};
 use std::path::PathBuf;
 
 use clap::{Parser, ValueHint};
@@ -7,6 +7,7 @@ use run_script::ScriptOptions;
 
 #[derive(Parser, Debug, PartialEq)]
 #[clap(author, version, about, long_about = None)]
+#[command(arg_required_else_help(true))]
 struct Cli {
     #[clap(short = 'l', long = "logfile", help = "write to logfile", value_hint = ValueHint::FilePath)]
     logfile_path: Option<PathBuf>,
@@ -18,14 +19,10 @@ struct Cli {
     stderr: bool,
 }
 
-//fn write_logfile(logfile_path: Option<PathBuf>, stdout: &[u8], stderr: &[u8]) {
 fn write_logfile(logfile_path: Option<PathBuf>, stdout: &str, stderr: &str) -> Result<(), Error> {
     if let Some(logfile) = logfile_path.as_deref() {
-        // println!("stdout: {:?}", stdout);
-        // println!("stderr: {:?}", stderr);
-//        let mut f = File::create(logfile).expect("Unable to create file");
 
-        // Open a file with append option
+        // Open log file with append option or create if not existing
         let mut f = if logfile.exists() {
             OpenOptions::new()
                 .append(true)
@@ -41,6 +38,12 @@ fn write_logfile(logfile_path: Option<PathBuf>, stdout: &str, stderr: &str) -> R
     Ok(())
 }
 
+fn print_errors(code: i32, output: &str , error: &str) {
+    println!("Exit Code: {}", code);
+    println!("STDOUT\n{}", output);
+    println!("STDERR\n{}", error);
+}
+
 fn main() -> Result<(), Error> {
     let cli = Cli::parse();
 
@@ -51,25 +54,14 @@ fn main() -> Result<(), Error> {
         let (code, output, error) = run_script::run(&command, &args, &options).unwrap();
 
         write_logfile(cli.logfile_path, &output, &error)?;
-        if code != 0 || (cli.stderr && !error.is_empty()) {
-            println!("Exit Code: {}", code);
-            //println!("Output: {}", output);
-            println!("Error: {}", error);
+        if code != 0 {
+            println!("cronic: detected error in command `{}`", command);
+            print_errors(code, &output, &error);
+        } else if cli.stderr && !error.is_empty() {
+            println!("cronic: detected error output in command `{}`", command);
+            print_errors(code, &output, &error);
         }
     }
 
-    // if let Some(command) = cli.command {
-    //     match cmd!(sh, "{command}").output() {
-    //         Ok(res) => {
-    //             println!("ok");
-    //             println!("res: {:?}", res);
-    //             write_logfile(cli.logfile_path, &res.stdout, &res.stderr);
-    //         },
-    //         Err(e) => println!("Error: {:?}", e)
-    //     }
-
-    // }
-    // // println!("out: {:?}", &out);
-    // // println!("out: {:?}", out.to_string());
     Ok(())
 }
