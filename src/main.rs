@@ -1,4 +1,4 @@
-use std::fs::{OpenOptions};
+use std::fs::{File, OpenOptions};
 use std::io::{Error, Write}; // bring trait into scope
 use std::path::PathBuf;
 
@@ -13,6 +13,9 @@ struct Cli {
 
     #[clap(short = 'c', long = "command", help = "Command to execute", value_hint = ValueHint::FilePath)]
     command: Option<String>,
+
+    #[clap(short = 'e', long = "stderr", help = "Trigger output when stderr is not empty")]
+    stderr: bool,
 }
 
 //fn write_logfile(logfile_path: Option<PathBuf>, stdout: &[u8], stderr: &[u8]) {
@@ -23,10 +26,14 @@ fn write_logfile(logfile_path: Option<PathBuf>, stdout: &str, stderr: &str) -> R
 //        let mut f = File::create(logfile).expect("Unable to create file");
 
         // Open a file with append option
-        let mut f = OpenOptions::new()
-            .append(true)
-            .open(logfile)
-            .expect("cannot open file");
+        let mut f = if logfile.exists() {
+            OpenOptions::new()
+                .append(true)
+                .open(logfile)
+                .expect("Cannot open logfile")
+        } else {
+            File::create(logfile).expect("Unable to create file")
+        };
 
         write!(f, "{}", stdout)?;
         write!(f, "{}", stderr)?;
@@ -44,7 +51,7 @@ fn main() -> Result<(), Error> {
         let (code, output, error) = run_script::run(&command, &args, &options).unwrap();
 
         write_logfile(cli.logfile_path, &output, &error)?;
-        if code != 0 {
+        if code != 0 || (cli.stderr && !error.is_empty()) {
             println!("Exit Code: {}", code);
             //println!("Output: {}", output);
             println!("Error: {}", error);
