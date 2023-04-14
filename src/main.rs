@@ -27,9 +27,9 @@ fn write_logfile(logfile_path: Option<PathBuf>, stdout: &str, stderr: &str) -> R
             OpenOptions::new()
                 .append(true)
                 .open(logfile)
-                .expect("Cannot open logfile")
+                .unwrap_or_else(|_| panic!("Cannot open logfile `{}`", logfile.display()))
         } else {
-            File::create(logfile).expect("Unable to create file")
+            File::create(logfile).unwrap_or_else(|_| panic!("Unable to create logfile `{}`", logfile.display()))
         };
 
         write!(f, "{}", stdout)?;
