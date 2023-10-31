@@ -12,7 +12,7 @@ cron sends automatic emails when a cron job writes anything
 But it doesn't care if a cron job exited with an error code.
 
 
-## What do we want?
+## What do we want to achieve?
 
 We want cron to send a mail
 
@@ -42,7 +42,7 @@ then `rconic` writes the cron jobs' error code and stderr to stdout so that a ma
 It is highly recommended to turn on strict error handling in bash/zsh scripts which is done by
 
 ```sh
-set -eu
+set -euo pipefail
 ```
 
 If required also tracing could be turned on
