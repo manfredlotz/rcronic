@@ -1,41 +1,38 @@
 # Overview
 
-The following was discussed on https://habilis.net/cronic/ does.
+The problem with cron is that it creates _unwanted emailed output_. This is described in 
+more detail in the next section.
+
+The `rcronic` tool tries to help by running a cron job in a way that an email is sent 
+only in case the cron job has failed.
+
+
 
 ## The problem with running cron jobs
 
 cron sends automatic emails when a cron job writes anything 
 
-- to stdout
+- to stdout or
 - to stderr
 
-But it doesn't care if a cron job exited with an error code.
+But it doesn't care if a cron job exits with an error code.
 
+This was discussed in more detail on https://habilis.net/cronic/.
 
-## What do we want to achieve?
+## What does rcronic do?
 
-We want cron to send a mail
+rcronic is a wrapper for a cronjob and creates output only if
 
-- if an error happened in a cron job
-- (perhaps) if something got written to stderr by the cron job
-
-
-# Possible solution
-
-Running a wrapper which invokes the cron job and takes care to trigger sending email by cron.
-
-This is exactly what the shell script provided by https://habilis.net/cronic/ does.
-
+- if an error happened in the cron job
+- and optionally if something got written to stderr by the cron job
+    - this could be necessary if a cron job writes error to stderr but does not return
+      with an exit code <>0
+- additionally it can write to a log file if required
 
 # rcronic
 
-Instead of using the script provided by Chuck Houpt I wrote a small Rust program which serves as a wrapper to 
-run a cron job.
-
-## How does `rcronic` work?
-
 If the cron job returns with an error or if `--stderr` was specified and the cron job wrote something to stderr 
-then `rconic` writes the cron jobs' error code and stderr to stdout so that a mail gets sent.
+then `rconic` writes the cron jobs' error code and stdout and stderr to stdout so that a mail gets sent.
 
 # Strict error handling in bash/zsh scripts
 
