@@ -23,16 +23,16 @@ This was discussed in more detail on https://habilis.net/cronic/.
 
 rcronic is a wrapper for a cronjob and creates output only if
 
-- if an error happened in the cron job
+- if the cron job exits with an exit code <> 0
 - and optionally if something got written to stderr by the cron job
     - this could be necessary if a cron job writes error to stderr but does not return
-      with an exit code <>0
+      with an exit code <> 0
 - additionally it can write to a log file if required
 
 # rcronic
 
 If the cron job returns with an error or if `--stderr` was specified and the cron job wrote something to stderr 
-then `rconic` writes the cron jobs' error code and stdout and stderr to stdout so that a mail gets sent.
+then `rconic` writes the cron jobs' error code, stdout and stderr so that a mail gets sent.
 
 # Strict error handling in bash/zsh scripts
 
