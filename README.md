@@ -1,3 +1,12 @@
+/ This repository has been moved to codeberg. \
+\ https://codeberg.org/ManfredLotz/rcronic    /
+ ---------------------------------------------
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\/\
+                ||----w |
+                ||     ||
+
 # Overview
 
 The problem with cron is that it creates _unwanted emailed output_. This is described in 
